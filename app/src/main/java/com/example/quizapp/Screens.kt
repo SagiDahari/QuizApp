@@ -1,7 +1,6 @@
 package com.example.quizapp
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -19,7 +17,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
@@ -35,18 +32,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
-
+/**
+ * The HomeScreen composable function represents the home screen of the QuizApp.
+ * It allows the user to start a new quiz or navigate to the settings screen.
+ *
+ * @param viewModel The view model containing the quiz logic and state.
+ * @param navController The NavHostController to handle navigation.
+ */
 @Composable
-fun HomeScreen( viewModel: QuizViewModel, navController: NavHostController ) {
-    val numOfQuestions by remember { viewModel.numOfQuestions }
-    val selectedDifficulty by remember { viewModel.difficulty }
-    val selectedCategory by remember { viewModel.category }
-    
+fun HomeScreen(viewModel: QuizViewModel, navController: NavHostController) {
+    // Extracting state variables
+    val numOfQuestions by viewModel.numOfQuestions
+    val selectedDifficulty by viewModel.difficulty
+    val selectedCategory by viewModel.category
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -70,11 +73,16 @@ fun HomeScreen( viewModel: QuizViewModel, navController: NavHostController ) {
     }
 }
 
+/**
+ * The QuizScreen composable function represents the quiz screen where the user
+ * answers questions. It shows the current question, possible answers, and
+ * navigates to the next question or results screen based on user input.
+ *
+ * @param viewModel The view model containing the quiz logic and state.
+ * @param navController The NavHostController to handle navigation.
+ */
 @Composable
-fun QuizScreen(
-    viewModel: QuizViewModel,
-    navController: NavHostController
-) {
+fun QuizScreen(viewModel: QuizViewModel, navController: NavHostController) {
     val currentQuestionIndex by viewModel.currentQuestionIndex.collectAsState()
     val score by viewModel.score.collectAsState()
     val isAnswerSelected by viewModel.isAnswerSelected
@@ -99,12 +107,14 @@ fun QuizScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Question ${currentQuestionIndex + 1}",
+                Text(
+                    text = "Question ${currentQuestionIndex + 1}",
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = currentQuestion.question,
+                Text(
+                    text = currentQuestion.question,
                     modifier = Modifier
                         .fillMaxWidth(0.8f)  // Restrict the width
                         .padding(8.dp),
@@ -112,7 +122,7 @@ fun QuizScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-
+                // Shuffling the answers
                 val allAnswers = remember(currentQuestion) {
                     currentQuestion.incorrect_answers.toMutableList().apply {
                         add(currentQuestion.correct_answer)
@@ -120,12 +130,12 @@ fun QuizScreen(
                     }
                 }
 
-                LazyColumn (
+                LazyColumn(
                     modifier = Modifier.fillMaxWidth(0.8f),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
 
-                ){
+                ) {
                     items(allAnswers) { answer ->
                         // Determine the background color based on the answer
                         val backgroundColor = when {
@@ -152,6 +162,7 @@ fun QuizScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+                // Checks if the current question is the last question and updates the button functionality accordingly
                 Button(
                     onClick = {
                         if (currentQuestionIndex < questions.size - 1) {
@@ -166,21 +177,41 @@ fun QuizScreen(
                 }
             }
         } else {
-            Text(text = "Loading questions...", modifier = Modifier.fillMaxSize())
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "Loading questions...")
+            }
         }
     }
 }
 
+/**
+ * The SettingsScreen composable function allows the user to configure quiz settings,
+ * including the number of questions, difficulty, and category. It saves the settings
+ * and navigates back to the home screen.
+ *
+ * @param viewModel The view model containing the quiz settings state.
+ * @param navController The NavHostController to handle navigation.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen( viewModel: QuizViewModel, navController: NavHostController ) {
-    var numOfQuestions by remember { viewModel.numOfQuestions }
-    val difficultyOptions = listOf("easy", "medium", "hard")
-    var selectedDifficulty by remember { viewModel.difficulty }
-    var expandedDifficulty by remember { mutableStateOf(false) }
+fun SettingsScreen(viewModel: QuizViewModel, navController: NavHostController) {
+    // Extracting state variables
+    var numOfQuestions by viewModel.numOfQuestions
+    var selectedDifficulty by viewModel.difficulty
+    var selectedCategory by viewModel.category
 
+    // Difficulty and category options
+    val difficultyOptions = listOf("easy", "medium", "hard")
     var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
-    var selectedCategory by remember { viewModel.category }
+
+    // State variables for dropdown menus
+    var expandedDifficulty by remember { mutableStateOf(false) }
     var expandedCategory by remember { mutableStateOf(false) }
 
     // Handle back press
@@ -190,7 +221,7 @@ fun SettingsScreen( viewModel: QuizViewModel, navController: NavHostController )
         }
     }
 
-    // Fetch categories from the API
+    // Fetch categories from the API when the screen is first displayed
     LaunchedEffect(Unit) {
         val response = RetrofitInstance.api.getCategories()
         if (response.isSuccessful) {
@@ -207,7 +238,6 @@ fun SettingsScreen( viewModel: QuizViewModel, navController: NavHostController )
     ) {
         Text(text = "Settings", style = MaterialTheme.typography.headlineLarge)
         Spacer(modifier = Modifier.height(16.dp))
-        // Number of Questions
         Text(text = "Number of Questions: $numOfQuestions")
         Slider(
             value = numOfQuestions.toFloat(),
@@ -294,6 +324,15 @@ fun SettingsScreen( viewModel: QuizViewModel, navController: NavHostController )
     }
 }
 
+/**
+ * The ResultsScreen composable function displays the quiz results, including the score
+ * and the total number of questions answered. It also provides a button to navigate back
+ * to the home screen.
+ *
+ * @param score The number of correct answers.
+ * @param totalQuestions The total number of questions in the quiz.
+ * @param navController The NavHostController to handle navigation.
+ */
 @Composable
 fun ResultsScreen(score: Int, totalQuestions: Int, navController: NavHostController) {
 
@@ -315,7 +354,7 @@ fun ResultsScreen(score: Int, totalQuestions: Int, navController: NavHostControl
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = "You answered $score out of $totalQuestions questions correctly.")
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { navController.navigate("home")}) {
+        Button(onClick = { navController.navigate("home") }) {
             Text(text = "Go to Home")
         }
     }

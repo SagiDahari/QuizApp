@@ -8,6 +8,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 
+/**
+ * Navigation composable for the Quiz App,
+ * that describes the Navigation Graph for the app.
+ */
 @Composable
 fun QuizAppNavigation() {
     val navController = rememberNavController()
